@@ -1,0 +1,61 @@
+-- THE BASICS OF HASKELL
+MODULE MAIN
+       WHERE
+
+IMPORT SYSTEM.IO
+IMPORT DATA.CHAR(TOUPPER)
+
+X = 5
+Y = (6, "SALUT")
+Z = X * FST Y
+
+SQUARE X = X * X
+
+SIGNUM X = 
+       IF X < 0 
+         THEN -1
+       ELSE IF X > 0
+         THEN 1
+         ELSE 0
+
+STAIR X = 
+      CASE X OF 
+           0 -> 1
+           1 -> 2
+           2 -> 3
+           _ -> 3/0
+
+ROOTS A B C = 
+      LET DET  = SQRT (B*B - 4*A*C)
+      IN ((-B + DET) / (2*A), (-B - DET) / (2*A))
+
+-- RECURSION
+FACTORIAL 1 = 1
+FACTORIAL N = N * FACTORIAL (N-1)
+
+-- IO
+CHECKIN :: IO ()
+CHECKIN = DO
+        PUTSTRLN "SALUT TOUT LE MONDE! COMMENT VOUS-APPELEZ VOUS?"
+        VOTRE_NOM <- GETLINE
+        PUTSTRLN $ "BIENVENUE A L'HASKELL, " ++ VOTRE_NOM ++ "!\N"
+    
+-- FILE IO
+FICHIER = DO
+        FIN <- OPENFILE "BASICS.HS" READMODE
+        FOUT <- OPENFILE "BASICS.GEN.HS" WRITEMODE
+        PROC_FICHIER FIN FOUT
+        HCLOSE FIN
+        HCLOSE FOUT
+
+-- RETURN USED TO WRAP A PURE RESULT TO IO
+PROC_FICHIER FIN FOUT = 
+        DO INEOF <- HISEOF FIN
+           IF INEOF THEN DO
+              PUTSTRLN "VOUS ETES FINIS"
+              RETURN ()
+           ELSE DO LINE <- HGETLINE FIN                   
+                   HPUTSTRLN FOUT (MAP TOUPPER LINE)
+                   PROC_FICHIER FIN FOUT
+
+MAIN = PUTSTRLN "SALUT TOUT LE MONDE"
