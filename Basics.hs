@@ -1,11 +1,13 @@
 -- The basics of Haskell
 -- C-c C-b: initialize haskell shell GHCi
 -- C-c C-l: load current file into the shell
+-- Ref: http://book.realworldhaskell.org/read/getting-started.html
 module Main
        where
 
 import System.IO
 import Data.Char(toUpper)
+import Data.Complex
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -30,10 +32,15 @@ stair x =
            2 -> 3
            _ -> 3/0
 
+-- Return type must be the same for the two branches
 roots a b c = 
-      let det  = sqrt (b*b - 4*a*c)
-      in ((-b + det) / (2*a), (-b - det) / (2*a))
-
+  let det = b*b - 4*a*c in
+  let drt = sqrt (abs det) in
+  if det >= 0 then
+    (((-b + drt)/(2*a)):+0, ((-b - drt)/(2*a)):+0)
+  else
+    ((-b/(2*a)):+(drt/(2*a)), (-b/(2*a)):+(-drt/(2*a)))
+  
 -- Recursion
 factorial 1 = 1
 factorial n = n * factorial (n-1)
@@ -57,11 +64,12 @@ fichier = do
 proc_fichier fin fout = 
         do ineof <- hIsEOF fin
            if ineof then do
-              putStrLn "vous etes finis"
-              return ()
-           else do line <- hGetLine fin                   
-                   hPutStrLn fout (map toUpper line)
-                   proc_fichier fin fout
+             putStrLn "vous etes finis"
+             return ()
+           else do
+             line <- hGetLine fin                   
+             hPutStrLn fout (map toUpper line)
+             proc_fichier fin fout
 
 -- -- Software Transactional Memory (STM)
 -- touch_stm = do shared <- atomically $ newTVar 0
@@ -77,3 +85,4 @@ proc_fichier fin fout =
 --                      milliSleep = threadDelay . (*) 1000
 
 main = putStrLn "salut tout le monde"
+       

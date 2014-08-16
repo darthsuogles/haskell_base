@@ -1,9 +1,15 @@
 -- THE BASICS OF HASKELL
+-- C-C C-B: INITIALIZE HASKELL SHELL GHCI
+-- C-C C-L: LOAD CURRENT FILE INTO THE SHELL
 MODULE MAIN
        WHERE
 
 IMPORT SYSTEM.IO
 IMPORT DATA.CHAR(TOUPPER)
+IMPORT DATA.COMPLEX
+IMPORT CONTROL.MONAD
+IMPORT CONTROL.CONCURRENT
+IMPORT CONTROL.CONCURRENT.STM
 
 X = 5
 Y = (6, "SALUT")
@@ -25,10 +31,15 @@ STAIR X =
            2 -> 3
            _ -> 3/0
 
+-- RETURN TYPE MUST BE THE SAME FOR THE TWO BRANCHES
 ROOTS A B C = 
-      LET DET  = SQRT (B*B - 4*A*C)
-      IN ((-B + DET) / (2*A), (-B - DET) / (2*A))
-
+  LET DET = B*B - 4*A*C IN
+  LET DRT = SQRT (ABS DET) IN
+  IF DET >= 0 THEN
+    (((-B + DRT)/(2*A)):+0, ((-B - DRT)/(2*A)):+0)
+  ELSE
+    ((-B/(2*A)):+(DRT/(2*A)), (-B/(2*A)):+(-DRT/(2*A)))
+  
 -- RECURSION
 FACTORIAL 1 = 1
 FACTORIAL N = N * FACTORIAL (N-1)
@@ -52,10 +63,25 @@ FICHIER = DO
 PROC_FICHIER FIN FOUT = 
         DO INEOF <- HISEOF FIN
            IF INEOF THEN DO
-              PUTSTRLN "VOUS ETES FINIS"
-              RETURN ()
-           ELSE DO LINE <- HGETLINE FIN                   
-                   HPUTSTRLN FOUT (MAP TOUPPER LINE)
-                   PROC_FICHIER FIN FOUT
+             PUTSTRLN "VOUS ETES FINIS"
+             RETURN ()
+           ELSE DO
+             LINE <- HGETLINE FIN                   
+             HPUTSTRLN FOUT (MAP TOUPPER LINE)
+             PROC_FICHIER FIN FOUT
+
+-- -- SOFTWARE TRANSACTIONAL MEMORY (STM)
+-- TOUCH_STM = DO SHARED <- ATOMICALLY $ NEWTVAR 0
+--                BEFORE <- ATOMREAD SHARED
+--                PUTSTRLN $ "BEFORE: " ++ SHOW BEFORE
+--                FORKIO $ 25 `TIMESDO` (DISPVAR SHARED >> MILLISLEEP 20)
+--                FORKIO $ 10 `TIMESDO` (APPV (+ 2) SHARED >> MILLISLEEP 50)
+--                FORKIO $ 20 `TIMESDO` (APPV PRED SHARED >> MILLISLEEP 25)
+--                MILLISLEEP 800
+--                AFTER <- ATOMREAD SHARED
+--                PUTSTRLN $ "AFTER: " ++ SHOW AFTER       
+--                WHERE TIMESDO = REPLICATEM_
+--                      MILLISLEEP = THREADDELAY . (*) 1000
 
 MAIN = PUTSTRLN "SALUT TOUT LE MONDE"
+       
